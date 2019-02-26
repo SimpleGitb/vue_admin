@@ -1,7 +1,7 @@
 <template>
     <div class="header"
     v-loading="loading"
-    element-loading-text="数据上传中，请耐心等待。"
+    element-loading-text="数据处理中，请耐心等待。"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(0, 0, 0, 0.8)">
         <!-- 折叠按钮 -->

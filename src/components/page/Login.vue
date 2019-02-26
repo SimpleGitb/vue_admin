@@ -118,7 +118,7 @@
                             _this.$message.success("登录成功!");
                             sessionStorage.ms_username = data.data.user_name;
                             sessionStorage.token = data.data.token;
-                            _this.$router.push('dashboard');
+                            _this.$router.push('/application');
                             setTimeout(function() {
                                     _this.rotate = 'test2';
                                     _this.display = "none";

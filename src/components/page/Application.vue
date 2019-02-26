@@ -43,7 +43,7 @@
                 filter-placement="bottom"
                 >
                 <template slot-scope="scope">
-                  <span v-if="scope.row.标签" @click="showInput($event,scope.row._id.$oid)">
+                  <span v-if="scope.row.标签" @click="showInput($event,scope.row._id.$oid)" style="cursor:pointer;">
                     <span v-bind:class="'btn'+scope.row._id.$oid">
                       <el-tag type="info" v-if="scope.row.标签 == '系统'">{{scope.row.标签}}</el-tag>
                       <el-tag type="danger" v-else-if="scope.row.标签 == '黑客工具'">{{scope.row.标签}}</el-tag>
