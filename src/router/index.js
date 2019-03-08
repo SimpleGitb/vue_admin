@@ -49,7 +49,8 @@ export default new Router({
                 {
                     path: '/application',
                     component: resolve => require(['../components/page/Application.vue'], resolve),
-                    meta: { title: '应用程序名单',permission: true ,keepAlive:true}
+                    meta: { title: '应用程序名单',permission: true ,keepAlive:true},
+                    name:'application'
                 },
                 {
                     path: '/appedit',
@@ -58,9 +59,22 @@ export default new Router({
                     name:'appedit'
                 },
                 {
+                    path: '/listcheck',
+                    component: resolve => require(['../components/page/ListCheck.vue'], resolve),
+                    meta: { title: '名单审核',permission: true ,keepAlive:true},
+                    name:'listcheck'
+                },
+                {
+                    path: '/reportquery',
+                    component: resolve => require(['../components/page/ReportQuery.vue'], resolve),
+                    meta: { title: '报告查询',permission: true ,keepAlive:true},
+                    name:'reportquery'
+                },
+                {
                     path: '/usermanagement',
                     component: resolve => require(['../components/page/UserManagement.vue'], resolve),
-                    meta: { title: '用户管理',permission: true ,keepAlive:true}
+                    meta: { title: '用户管理',permission: true ,keepAlive:true},
+                    name:'usermanagement'
                 },
                 {
                     path: '/monitoring',

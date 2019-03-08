@@ -677,6 +677,8 @@ export default {
 .dashboard{
     display: flex;
     flex-wrap: nowrap;
+    background: #ffffff;
+    margin: -20px;
 }
 .el-menu {
     width: 200px;

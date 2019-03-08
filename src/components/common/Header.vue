@@ -58,7 +58,7 @@
         <el-dialog
           title="导入信息"
           :visible.sync="importVisible"
-          width="25%"
+          width="480px"
           :close-on-click-modal="false"
           :before-close="handleClose">
           <span>
@@ -157,7 +157,7 @@
                 //             localStorage.removeItem('ms_username');
                 //             localStorage.removeItem('owner');
                 //             localStorage.removeItem('client');
-                //             sessionStorage.removeItem('ms_username');
+                //             localStorage.removeItem('ms_username');
                 //             localStorage.removeItem('baseUrl');
                 //             this.$loading({fullscreen:false});
                 //             this.$router.push({
@@ -167,7 +167,9 @@
                 //         }else{
                 //         }
                 // })
+
                  window.location.href='/login';
+                 localStorage.clear();
                 }
             },
             // 侧边栏折叠
@@ -225,6 +227,7 @@
             requsetHttp(params){
             this.importVisible = false;
             this.loading = true;
+            this.$refs['upload'].clearFiles();
             var fileObj = params.file;
             var form = new FormData();
             // 文件对象
@@ -236,14 +239,14 @@
             // console.log(form.get('os_type'))
             // console.log(form);
             var _self = this;
-            if(sessionStorage.token){
-                this.token = sessionStorage.token;
+            if(localStorage.token){
+                this.token = localStorage.token;
             }
             let config = {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'token':this.token,
-                    'username':sessionStorage.ms_username
+                    'username':localStorage.ms_username
                 },
                 onUploadProgress: progressEvent => {
                     var complete = (progressEvent.loaded / progressEvent.total * 100 | 0)
@@ -253,19 +256,21 @@
             }
             this.$axios.post(process.env.API_HOST+"/api/import_checkdata",form,config).then((res) => {
                 // _self.$message.success(res.data.status);
-                _self.loading = false;
-                _self.importinfo = res.data.info;
-                _self.importVisible = false;
-                _self.infoVisible = true;
+                if(res.data.info){
+                    _self.loading = false;
+                    _self.importinfo = res.data.info;
+                    _self.importVisible = false;
+                    _self.infoVisible = true;
+                }
             }).catch(error => {
                 _self.loading = false;
                 _self.$message.error(error.response.data.message);
                 _self.importVisible = false;
-                _self.$router.push('/login');
+                // _self.$router.push('/login');
             });
             },
             handleChange(value) {
-                console.log(value);
+                // console.log(value);
             },
             beforeAvatarUpload(file){
                 var testmsg=file.name.substring(file.name.lastIndexOf('.')+1)				
@@ -318,7 +323,28 @@
             //                 console.log(v);
             //        });
 
+        },
+        watch:{
+            $route(routers){
+                // console.log(routers.name);
+                this.username = localStorage.ms_username;
+            }
         }
+        // watch:{
+        //     $route(routers){
+        //         console.log(routers.name)
+        //         if(routers.name != 'login'){
+        //             // let username = localStorage.getItem('ms_username');
+        //             // if(username){
+        //             //     this.username = localStorage.getItem('ms_username');
+        //             // }else{
+        //             // // window.location.href='/login';
+        //             //     this.$router.push('/login');
+        //             // }
+        //             this.username = localStorage.getItem('ms_username');
+        //         }
+        //     }
+        // }
     }
 
 </script>
@@ -524,6 +550,7 @@
   margin: auto; */
   border: 1px dashed #d9d9d9;
   padding: 10px 20px;
+  text-align: center;
 }
 .header .el-loading-spinner {
     top: 32%;

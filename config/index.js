@@ -12,7 +12,8 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api':{
-          target:'http://192.168.30.135',
+          // target:'http://buying_admin_api.yunsee.cn',
+          target: 'http://192.168.30.135',
           changeOrigin:true,
           pathRewrite: {
             '^/api': '/'

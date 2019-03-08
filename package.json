@@ -20,6 +20,7 @@
     "gt3-sdk": "^2.0.0",
     "jquery": "^3.2.1",
     "mavon-editor": "^2.5.4",
+    "qs": "^6.6.0",
     "v-charts": "^1.17.6",
     "vue": "^2.5.16",
     "vue-bulma-chartjs": "^1.0.5",

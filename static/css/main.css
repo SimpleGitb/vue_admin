@@ -25,17 +25,24 @@ a {
     right: 0;
     top: 70px;
     bottom: 0;
-    overflow-y: scroll;
     -webkit-transition: left .3s ease-in-out;
     transition: left .3s ease-in-out;
+    overflow-y: hidden;
     /* background: #f0f0f0; */
 }
 
 .content {
     width: auto;
     /* padding: 40px; */
+    background: #F0F2F5;
+    padding: 20px;
+    min-height: 820px;
 }
-
+@media screen and (max-width: 1566px) {
+.content {
+    min-height: 650px;
+}
+}
 .content-collapse {
     left: 65px;
 }

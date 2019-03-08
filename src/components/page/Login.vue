@@ -116,16 +116,10 @@
                             // _this.$store.state.JWT_TOKEN = res.headers.authorization;
                             // localStorage.JWT_TOKEN = 'Bearer '+res.headers.authorization;
                             _this.$message.success("登录成功!");
-                            sessionStorage.ms_username = data.data.user_name;
-                            sessionStorage.token = data.data.token;
-                            _this.$router.push('/application');
-                            setTimeout(function() {
-                                    _this.rotate = 'test2';
-                                    _this.display = "none";
-                                    _this.opacity = "0";
-                                    captchaObj.reset();
-                                }, 1500);
-                            // sessionStorage.setItem('ms_username',_this.ruleForm.username);
+                            localStorage.ms_username = data.data.user_name;
+                            localStorage.token = data.data.token;
+                            _this.$router.push('application');
+                            // localStorage.setItem('ms_username',_this.ruleForm.username);
                         }).catch((error) => {
                             _this.$message.error(error.response.data.message);
                             setTimeout(function() {

@@ -40,7 +40,7 @@ export default {
         //     if(res.data.data.role !== 1){
         //         window.location.href = '/403'
         //     }
-        //     sessionStorage.role = res.data.data.role;
+        //     localStorage.role = res.data.data.role;
         // });
 
     }

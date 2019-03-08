@@ -2,21 +2,23 @@ import Vue from 'vue';
 import App from './App';
 import router from './router';
 import axios from 'axios';
+import qs from 'qs';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';    // 默认主题
 // import '../static/css/theme-green/index.css';       // 浅绿色主题
 import "babel-polyfill";
 // import './assets/iconfont/iconfont.css';
+
 import $ from 'jquery'
 // import 'swiper/dist/css/swiper.css';
 
-
+Vue.prototype.$qs = qs;
 Vue.use(ElementUI, { size: 'small' });
 Vue.prototype.$axios = axios;
 
 //使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
-    // const user = sessionStorage.getItem('ms_username');
+    // const user = localStorage.getItem('ms_username');
     // if(!user && to.path !== '/login'){
     //     next('/login');
     // }
