@@ -52,13 +52,8 @@
                         title: '用户管理'
                     },
                     {
-                        icon: 'icon-yonghuzuguanli',
-                        index: 'usergroup',
-                        title: '用户组管理'
-                    },
-                    {
-                        icon: 'icon-xitong',
-                        index: 'dashboard',
+                        icon: 'icon-xitong2',
+                        index: 'sysdashboard',
                         title: '系统基线'
                     }
                     // {

@@ -392,7 +392,7 @@ export default {
       this.config = {
         headers: {
             'token':this.token,
-            'username':localStorage.ms_username
+            'userid':localStorage.userid
         }
       };
       if(this.$route.query.user_name){
@@ -427,7 +427,7 @@ export default {
       }else{
         // this.$message.warning("暂无");
         // return;
-        window.location.href = 'http://192.168.30.211:8080/uploadreport?id='+id+"&token="+localStorage.token+"&username="+localStorage.ms_username;
+        window.location.href = 'http://buying.yunsee.cn/uploadreport?id='+id+"&token="+localStorage.token+"&userid="+localStorage.userid;
       }
     },
     getdate() {
@@ -532,6 +532,16 @@ export default {
         this.report_Id = row.report_id;
         this.currentPage3 = 1;
         if(column.label == '危险项' || column.label == '可疑项'){
+          if(column.label == '危险项'){
+            if(row.danger == 0){
+              return;
+            }
+          }
+          if(column.label == '可疑项'){
+            if(row.suspect == 0){
+              return;
+            }
+          }
           this.infoVisible = true;
           if(column.label == '危险项'){
             this.level = 'danger';

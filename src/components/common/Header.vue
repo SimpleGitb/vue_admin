@@ -1,7 +1,7 @@
 <template>
     <div class="header"
     v-loading="loading"
-    element-loading-text="数据处理中，请耐心等待。"
+    element-loading-text="数据上传中，请耐心等待。"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(0, 0, 0, 0.8)">
         <!-- 折叠按钮 -->
@@ -30,23 +30,21 @@
                             </li>
                         </el-tooltip>
                     <li>
-                        <div class="user-avator"><img src="static/img/img.jpg"></div>
                         <!-- 用户名下拉菜单 -->
-                       <el-col>
-                        <el-dropdown  @command="handleCommand">
+                         <el-dropdown  @command="handleCommand" trigger="hover" placement="bottom-start">
                             <span class="el-dropdown-link">
+                                <span class="user-avator"><img src="static/img/img.jpg"></span>
                                 {{username}}<i class="el-icon-arrow-down el-icon--right"></i>
                             </span>
                             <el-dropdown-menu slot="dropdown">
-                                <el-dropdown-item>
+                                <!-- <el-dropdown-item>
                                     <router-link to="/ModifyData" tag="p">
                                         修改资料
                                     </router-link>
-                                    </el-dropdown-item>
+                                </el-dropdown-item> -->
                                 <el-dropdown-item command="loginout">退出登录</el-dropdown-item>
                             </el-dropdown-menu>
-                        </el-dropdown>
-                    </el-col>
+                         </el-dropdown>
                     </li>
                 </ul>
                 <!-- 消息中心 -->
@@ -61,7 +59,7 @@
           width="480px"
           :close-on-click-modal="false"
           :before-close="handleClose">
-          <span>
+          <span class="importSystem">
               <!-- <el-form >
                 <el-form-item label="系统选择">
                   <el-cascader
@@ -73,10 +71,35 @@
                   </el-cascader>
                 </el-form-item>
               </el-form> -->
-              <div style="margin-bottom: 10px;">
+               <el-radio-group v-model="radio" @change="radioChange">
+                    <el-radio :label="1">系统完整包</el-radio>
+                    <el-radio :label="2">
+                        <el-select v-model="specificLabel" clearable placeholder="请选择特定标签" :disabled="radioDisable">
+                            <el-option
+                            v-for="item in labelOptions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </el-radio>
+                </el-radio-group>
+                <el-form >
+                    <el-form-item label="数据来源">
+                        <el-select v-model="dataSource" clearable placeholder="请选择">
+                            <el-option
+                            v-for="item in dataSourceOptions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-form>
+              <!-- <div style="margin-bottom: 10px;">
                   请上传最新版本数据包，导入的程序默认为“系统”标签
-                  <!-- <el-checkbox v-model="checked">添加应用程序名单</el-checkbox> -->
-                </div>
+                  <el-checkbox v-model="checked">添加应用程序名单</el-checkbox>
+                </div> -->
               <el-upload
                 class="upload-demo"
                 drag
@@ -122,8 +145,6 @@
     import bus from '../common/bus';
     // import { Loading } from 'element-ui';
     // import store from '../../store/index';
-    
-
     export default {
         data() {
             return {
@@ -139,8 +160,18 @@
                 selectedOptions:[],
                 token:"",
                 importinfo:"",
-                loading:false,
                 percentage: 0,
+                loading:false,
+                config:{},
+                progressId:'',
+                infoProcentage:'',
+                radio: 1,
+                specificLabel:'',
+                labelOptions: [],
+                dataSource:'',
+                dataSourceOptions:[],
+                radioDisable:true,
+                importType:'default'
             }
         },
         computed:{
@@ -220,6 +251,26 @@
             },
             importInfo(){
                 this.importVisible = true;
+                this.config = {
+                    headers: {
+                        'token':localStorage.token,
+                        'userid':localStorage.userid
+                    }
+                };
+                this.$axios.get(process.env.API_HOST+"/api/back_import/getInfo",this.config).then((res) => {
+                    if(res.data.data){
+                        this.labelOptions = res.data.data.label_list.map(element => {
+                            return { text: element, value: element }
+                        });
+                        this.dataSourceOptions = res.data.data.data_source.map(element => {
+                            return { text: element, value: element }
+                        });
+                    }else{
+                        this.$message.error("列表为空！");
+                    }
+                }).catch((error) => {
+                    this.$message.error(error.response.data.message);
+                });
             },
             handleClose(done) {
                 done();
@@ -232,21 +283,23 @@
             var form = new FormData();
             // 文件对象
             form.append("file_name", fileObj);
-            // form.append("os_type", this.selectedOptions[0]);
             // form.append("os_name", this.selectedOptions[1]);
             form.append("only_appInfo", this.checked);
+            form.append("label_name", this.specificLabel);
+            form.append("data_source", this.dataSource);
+            console.log(this.specificLabel)
+            console.log(this.dataSource)
+
             // console.log(form.get("file_name"));
-            // console.log(form.get('os_type'))
-            // console.log(form);
             var _self = this;
             if(localStorage.token){
                 this.token = localStorage.token;
             }
-            let config = {
+            this.config = {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'token':this.token,
-                    'username':localStorage.ms_username
+                    'userid':localStorage.userid
                 },
                 onUploadProgress: progressEvent => {
                     var complete = (progressEvent.loaded / progressEvent.total * 100 | 0)
@@ -254,18 +307,30 @@
                 },
                 timeout: 600000
             }
-            this.$axios.post(process.env.API_HOST+"/api/import_checkdata",form,config).then((res) => {
+            this.$axios.post(process.env.API_HOST+"/api/import_checkdata/"+this.importType,form,this.config).then((res) => {
                 // _self.$message.success(res.data.status);
                 if(res.data.info){
-                    _self.loading = false;
-                    _self.importinfo = res.data.info;
-                    _self.importVisible = false;
-                    _self.infoVisible = true;
+                    // _self.loading = false;
+                    // _self.$message.success("上传成功!");
+                    _self.progressId = res.data.id.$oid;
+                    setTimeout(function(){
+                         $('.el-loading-text').text('数据正在检查中，请耐心等待。');
+                        _self.percentage = 0;
+                    },200)
+                    var time1 = setInterval(() => {
+                        this.backstageGetPro();
+                        
+                        if(this.percentage >= 100){
+                            _self.loading = false;
+                            _self.importinfo = _self.infoProcentage;
+                            _self.infoVisible = true;
+                            clearInterval(time1);
+                        }
+                    }, 5000);
                 }
             }).catch(error => {
                 _self.loading = false;
                 _self.$message.error(error.response.data.message);
-                _self.importVisible = false;
                 // _self.$router.push('/login');
             });
             },
@@ -294,9 +359,34 @@
             searchList(){
                 this.infoVisible = false;
                 this.$router.push('/application');
+            },
+            //获取后台上传进度
+            backstageGetPro(){
+                this.$axios.get(process.env.API_HOST+"/api/back_import/get_result?id="+this.progressId,this.config).then((res) => {
+                    this.percentage = res.data.data[0].complete_per;
+                    this.infoProcentage = res.data.data[0].info;
+                }).catch((error) => {
+                    this.$message.error(error.response.data.message);
+                });
+            },
+            getName(){
+                this.username = localStorage.ms_username;
+            },
+            radioChange(val){
+                switch(val){
+                    case 1:
+                        this.radioDisable = true;
+                        this.importType = 'default'
+                    break;
+                    case 2:
+                        this.radioDisable = false;
+                        this.importType = 'special'
+                    break;
+                }
             }
         },
         created(){
+            this.getName();
             // this.$axios.get(localStorage.baseUrl+'/person',{
             //     headers:{
             //                     'Authorization':localStorage.JWT_TOKEN
@@ -326,7 +416,6 @@
         },
         watch:{
             $route(routers){
-                // console.log(routers.name);
                 this.username = localStorage.ms_username;
             }
         }
@@ -504,12 +593,14 @@
     .user-avator{
         margin-left: 20px;
         margin-right: 10px;
+        display: inline-block;
     }
     .user-avator img{
-        display: block;
+        // display: block;
         width:40px;
         height:40px;
         border-radius: 50%;
+        vertical-align: middle;
     }
     .el-dropdown-link{
         color: #fff;
@@ -535,7 +626,13 @@
     .progressIs{
     display: none;
     }
-    
+.el-dropdown-menu{
+  width: 135px;}
+.importSystem{
+    .el-form{
+        margin: 20px 0;
+    }
+}
 </style>
 <style>
 .header .el-upload--text{
@@ -557,5 +654,8 @@
 }
 .header .el-loading-mask{
     height: 1000px;
+}
+.el-dialog__header{
+    border-bottom: 1px solid #dcdfe6;
 }
 </style>

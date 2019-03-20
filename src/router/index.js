@@ -16,9 +16,9 @@ export default new Router({
             meta: { title: '自述文件' },
             children:[
                 {
-                    path: '/dashboard',
+                    path: '/sysdashboard',
                     component: resolve => require(['../components/page/Dashboard.vue'], resolve),
-                    meta: { title: '系统首页',permission: true ,keepAlive:true},
+                    meta: { title: '系统基线',permission: true ,keepAlive:true},
                     children:[
                         {
                             path: '/list',
@@ -44,7 +44,8 @@ export default new Router({
                             meta: { title: '树',permission: true ,keepAlive:true}
                         },
                     ],
-                    redirect:'/list'
+                    redirect:'/list',
+                    name:'sysdashboard'
                 },
                 {
                     path: '/application',
@@ -97,7 +98,8 @@ export default new Router({
         },
         {
             path: '/login',
-            component: resolve => require(['../components/page/Login.vue'], resolve)
+            component: resolve => require(['../components/page/Login.vue'], resolve),
+            name: 'login'
         },
         {
             path: '/404',

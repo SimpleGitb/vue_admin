@@ -111,7 +111,8 @@ export default {
       checked: true,
       infoData:[],
       form:[],
-      selectedOptions:[]
+      selectedOptions:[],
+      config:{}
     };
   },
   methods: {
@@ -136,7 +137,7 @@ export default {
           attr_name:this.newval[2],
           id:id
         }
-      }).then((res) => {
+      },this.config).then((res) => {
         // console.log(res)
         this.fetchData();
           this.$message.success("删除成功！");
@@ -146,7 +147,14 @@ export default {
     },
     fetchData(){
       var _self = this;
-      this.$axios.get(process.env.API_HOST+"/api/base_whitelist?os_type="+this.newval[0]+"&os_name="+this.newval[1]+"&attr_name="+this.newval[2]).then((res) => {
+      this.config = {
+          headers: {
+              'Content-Type': 'multipart/form-data',
+              'token':localStorage.token,
+              'userid':localStorage.userid
+          }
+      };
+      this.$axios.get(process.env.API_HOST+"/api/base_whitelist?os_type="+this.newval[0]+"&os_name="+this.newval[1]+"&attr_name="+this.newval[2],this.config).then((res) => {
             // console.log(res.data.data);
             this.tableData = res.data.data;
         }).catch((error) => {
@@ -155,7 +163,7 @@ export default {
     },
     rowClick(row, event, column){
       this.infoVisible = true;
-      this.$axios.get(process.env.API_HOST+"/api/base_whitelist/show?os_type="+this.newval[0]+"&os_name="+this.newval[1]+"&attr_name="+this.newval[2]+"&id="+row._id.$oid).then((res) => {
+      this.$axios.get(process.env.API_HOST+"/api/base_whitelist/show?os_type="+this.newval[0]+"&os_name="+this.newval[1]+"&attr_name="+this.newval[2]+"&id="+row._id.$oid,this.config).then((res) => {
           this.infoData = res.data.data[0];
           delete this.infoData._id;
           delete this.infoData.attr_name_id
@@ -200,11 +208,7 @@ export default {
       // console.log(form.get('os_type'))
       // console.log(form);
       var _self = this;
-      let config = {
-          headers: {
-              'Content-Type': 'multipart/form-data'
-          }
-      }
+      
       this.$axios.post(process.env.API_HOST+"/api/import_checkdata",form,config).then((res) => {
         _self.$message.success(res.data.status)
       }).catch(error => {
@@ -218,7 +222,7 @@ export default {
     }, 
     diaSelectData(){
       var _self = this;
-      this.$axios.get(process.env.API_HOST+"/api/navigation_list/base/index").then((res) => {
+      this.$axios.get(process.env.API_HOST+"/api/navigation_list/base/index",this.config).then((res) => {
           const Data = res.data.data;
           Data.forEach((element,index) => {
             _self.form.push({
@@ -314,5 +318,3 @@ export default {
   padding: 10px 20px;
 }
 </style>
-
-

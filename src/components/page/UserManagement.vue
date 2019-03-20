@@ -97,14 +97,26 @@
           :close-on-click-modal="false"
           :before-close="handleClose">
           <span class="popsinterface">
-              <div v-for="(info,key) in infoData" :key="key">
+            <table style="border: 1px solid RGB(220,220,220);font-weight: normal;" frame="border" cellpadding="8" cellspacing="5" align="center" rules="all">
+					    <template v-for="(info,key) in infoData">
+                <tr align="center" :key="key" v-if="key == '贡献名单数'" @click="listRouter(infoData[key])" style="cursor: pointer">
+					        <th>{{key}}：</th>
+					        <td>{{infoData[key]}}</td>
+					      </tr>
+                <tr align="center" :key="key" v-else>
+					        <th>{{key}}：</th>
+					        <td>{{infoData[key]}}</td>
+					      </tr>
+              </template>
+					  </table>
+              <!-- <div v-for="(info,key) in infoData" :key="key">
                 <div v-if="key == 'total_contributions'" @click="listRouter">
                   <span>{{key}}：</span>{{infoData[key]}}
                 </div>
                 <div v-else>
                   <span>{{key}}：</span>{{infoData[key]}}
                 </div>
-              </div>
+              </div> -->
           </span>
           <span slot="footer" class="dialog-footer">
               <el-button @click="infoVisible = false" type="primary">我知道了</el-button>
@@ -194,6 +206,19 @@
 export default {
   name: "usermanagement",
   data: function() {
+    var validatePhone = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入手机'));
+      } else {
+        let rephone = /^1\d{10}$/;
+        if (rephone.test(value)) {
+          callback();
+        } else {
+          callback(new Error('请输入正确的手机号'));
+        }
+        // callback();
+      }
+    };
     return {
       tableData:[],
       currentPage:1,
@@ -224,22 +249,22 @@ export default {
       },
       rules: {
           name: [
-            { required: true, message: '请输入用户名', trigger: 'blur' },
+            { required: true, message: '请输入用户名', trigger: 'change' },
           ],
           email: [
-            { required: true, message: '请输入邮箱', trigger: 'blur' },
+            { required: true, message: '请输入邮箱', trigger: 'change' },
           ],
           phone: [
-            { required: true, message: '请输入手机号', trigger: 'blur' },
+            { required: true, validator: validatePhone, trigger: 'change' },
           ],
           password: [
-            { required: true, message: '请输入密码', trigger: 'blur' },
+            { required: true, message: '请输入密码', trigger: 'change' },
           ],
           users: [
             { required: true, message: '请选择用户组', trigger: 'change' }
           ],
           integral: [
-            { required: true, message: '请输入积分', trigger: 'blur' },
+            { required: true, message: '请输入积分', trigger: 'change' },
           ],
       },
       config:{}
@@ -276,7 +301,7 @@ export default {
      this.config = {
             headers: {
                 'token':localStorage.token,
-                'username':localStorage.ms_username
+                'userid':localStorage.userid
             }
         };
       this.$axios.get(process.env.API_HOST+"/api/user/index?page="+this.currentPage+"&pageSize="+this.pageSize+"&sort=desc"+"&filter_condition[user_group]="+this.filter1,this.config).then((res) => {
@@ -310,23 +335,29 @@ export default {
         });
       }
       if(column.label == '报告数'){
-        this.$router.push({
-          path:'/reportquery',
-          query:{user_name:row.name}
-        })
+        if(row.total_reports != 0){
+          this.$router.push({
+            path:'/reportquery',
+            query:{user_name:row.name}
+          })
+        }
       }
       if(column.label == '检查机器数'){
-        this.$router.push({
-          path:'/reportquery',
-          query:{machines_name:row.name}
-        })
+        if(row.total_machines != 0){
+          this.$router.push({
+            path:'/reportquery',
+            query:{machines_name:row.name}
+          })
+        }
       }
     },
     handleClose(done) {
         done();
     },
-    listRouter(){
-      this.$router.push('/application');
+    listRouter(val){
+      if(val != 0){
+        this.$router.push('/application');
+      }
     },
     filterChange(filters){
       if(filters){
@@ -338,8 +369,24 @@ export default {
       this.fetchData();
     },
     addUserMethod(){
-      if(!this.ruleForm.name || !this.ruleForm.users || !this.ruleForm.password || !this.ruleForm.phone || !this.ruleForm.email || !this.ruleForm.integral){
-        this.$message.error("请填写完整的表单再进行提交");
+      if(!this.ruleForm.name){
+        this.$message.error("请填写用户名");
+        return
+      }
+      if(!this.ruleForm.password){
+        this.$message.error("请填写密码");
+        return
+      }
+      if(!this.ruleForm.phone){
+        this.$message.error("请填写手机号");
+        return
+      }
+      if(!this.ruleForm.email || !this.ruleForm.integral){
+        this.$message.error("请填写邮箱");
+        return
+      }
+      if(!this.ruleForm.integral){
+        this.$message.error("请填写积分");
         return
       }
       this.$axios.post(process.env.API_HOST+"/api/user/create",{
@@ -371,6 +418,13 @@ export default {
         this.ruleForm2.phone = this.editId.phone;
         this.ruleForm2.integral = this.editId.integral;
         this.ruleForm2.password = '';
+        if(this.editId.role == '管理员'){
+          this.ruleForm2.users = 'admin';
+        }else if(this.editId.role == '用户'){
+          this.ruleForm2.users = 'user';
+        }else if(this.editId.role == '工程师'){
+          this.ruleForm2.users = 'engineer';
+        }
         // this.ruleForm2.users = this.editid.role;
         // if(this.ruleForm2.users === '用户'){
         //   this.ruleForm2.users = 'user'
@@ -379,6 +433,26 @@ export default {
         // }
     },
     editUserMethod(){
+      // if(!this.ruleForm2.name || !this.ruleForm2.users || !this.ruleForm2.phone || !this.ruleForm2.email || !this.ruleForm2.integral){
+      //   this.$message.error("请填写完整的表单再进行提交");
+      //   return
+      // }
+      if(!this.ruleForm2.name){
+        this.$message.error("请填写用户名");
+        return
+      }
+      if(!this.ruleForm2.phone){
+        this.$message.error("请填写手机号");
+        return
+      }
+      if(!this.ruleForm2.email){
+        this.$message.error("请填写邮箱");
+        return
+      }
+      if(!this.ruleForm2.integral){
+        this.$message.error("请填写积分");
+        return
+      }
       this.$axios.put(process.env.API_HOST+"/api/user/edit",{
         id:this.editId._id.$oid,
         update_content:{
@@ -392,7 +466,17 @@ export default {
       },this.config).then((res) => {
           this.$message.success("编辑用户成功");
           this.editUserVisible = false;
-          this.fetchData();
+          // this.fetchData();
+          // setTimeout(function(){
+          //   window.location.href='/login';
+          //   localStorage.clear();
+          // },500);
+          if(this.ruleForm2.name == localStorage.ms_username){
+            setTimeout(function(){
+              window.location.href='/login';
+              localStorage.clear();
+            },500);
+          }
         }).catch((error) => {
             this.$message.error(error.response.data.message);
         });
@@ -451,11 +535,22 @@ header{
   margin-left: -30px;
 }
 .elwidth{
-  width: 77%;
+  width: 76%;
 }
 @media screen and (max-width: 1566px) {
 .elwidth{
   width: 63%;
+}
+.btn-list{
+  .orange{
+    margin-top: 10px;
+    margin-left: 0;
+  }
+}
+}
+@media screen and (max-width: 1327px) {
+.elwidth{
+  width: 61%;
 }
 }
 .Total_report{
@@ -463,6 +558,25 @@ header{
 }
 .Total_machines{
   width:41px;height:25px;background:#DDEEFF;display: inline-block;border-radius: 4px;color:#409EFF;cursor: pointer;
+}
+table{
+  margin-top: 20px;
+  width: 100%;
+}
+table th {
+	background: #F7F9FA;
+	width: 35%;
+	font-weight: normal;
+  border: 1px solid RGB(220, 220, 220);
+  padding: 5px 10px ;
+}
+
+table td {
+	border: 1px solid RGB(220, 220, 220);
+	font-size: 14px;
+	text-align: left;
+	padding: 0 20px;
+	color: #797979;
 }
 </style>
 <style>
@@ -474,7 +588,7 @@ header{
 }
 .usermanagement .list-item{
   padding: 7px ;
-  border-radius: 0 !important;
+  /* border-radius: 0 !important; */
 }
 .usermanagement .el-dialog__body {
     padding: 0px 20px;
@@ -489,6 +603,9 @@ header{
 }
 .usermanagement .el-form-item__label {
     text-align: right !important;
+}
+.usermanagement .popsinterface .el-button--small{
+  vertical-align: bottom;
 }
 </style>
 

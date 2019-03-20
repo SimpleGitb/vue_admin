@@ -87,7 +87,25 @@
 				}
 			}
 		},
-		methods: {},
+		methods: {
+            toUnicodeFun(data){
+            if(data == '' || typeof data == 'undefined') return '请输入汉字';
+            var str =''; 
+            for(var i=0;i<data.length;i++){
+                str+="\\u"+data.charCodeAt(i).toString(16);
+            }
+            return str;
+            },
+            toChineseWords(data){
+                if(data == '' || typeof data == 'undefined') return '请输入十六进制unicode';
+                data = data.split("\\u");
+                var str ='';
+                for(var i=0;i<data.length;i++){
+                    str+=String.fromCharCode(parseInt(data[i],16).toString(10));
+                }
+                return str;
+            }
+        },
 		created() {
 			var _this = this;
             this.$nextTick(function(){
@@ -112,12 +130,16 @@
                             // geetest_seccode: result.geetest_seccode
                         }).then((res) => {
                             let data = res.data;
-                            // axios.defaults.headers.common['Authorization'] = 'Bearer '+res.headers.authorization;
-                            // _this.$store.state.JWT_TOKEN = res.headers.authorization;
-                            // localStorage.JWT_TOKEN = 'Bearer '+res.headers.authorization;
                             _this.$message.success("登录成功!");
                             localStorage.ms_username = data.data.user_name;
+                            // localStorage.ms_username = _this.toUnicodeFun(data.data.user_name);
+                            // console.log(_this.toUnicodeFun('中国'))
+                            // console.log(_this.toUnicodeFun('Liberty'))
+                            // console.log(_this.toChineseWords(_this.toUnicodeFun('Liberty')))
                             localStorage.token = data.data.token;
+                            localStorage.userid = data.data.user_id.$oid;
+                            // axios.defaults.headers.common['token'] = data.data.token;
+                            // axios.defaults.headers.common['username'] = data.data.user_name;
                             _this.$router.push('application');
                             // localStorage.setItem('ms_username',_this.ruleForm.username);
                         }).catch((error) => {
@@ -154,8 +176,8 @@
                     let data = res.data;
                     initGeetest({
                         // 以下 4 个配置参数为必须，不能缺少
-                        gt: data.gt,
-                        challenge: data.challenge,
+                        gt: data.gt,  //a0b7c21ddd261425133c5419988d24fe
+                        challenge: data.challenge, //10e2f95906660e62fd881ecb1a3b19c2
                         offline: !data.success, // 表示用户后台检测极验服务器是否宕机
                         new_captcha: data.new_captcha, // 用于宕机时表示是新验证码的宕机
                         timeout: '5000',

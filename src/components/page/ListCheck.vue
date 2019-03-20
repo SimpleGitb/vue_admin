@@ -23,7 +23,7 @@
           show-overflow-tooltip>
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" placement="right-start" :disabled="scope.row.文件属性 == ''?true:false">
-              <div slot="content" style="width:330px">
+              <div slot="content" class="tooltip_content">
                 {{scope.row.文件属性}}
               </div>
               <el-button type="text">
@@ -103,7 +103,8 @@ export default {
       total: 0,
       pageSize:10,
       multipleSelection: [],
-      deleteDisabled: true
+      deleteDisabled: true,
+      config:{}
     };
   },
   methods: {
@@ -120,13 +121,13 @@ export default {
         this.fetchData();
       },
       fetchData(){
-        let config = {
+        this.config = {
             headers: {
                 'token':localStorage.token,
-                'username':localStorage.ms_username
+                'userid':localStorage.userid
             }
         };
-        this.$axios.get(process.env.API_HOST+"/api/list_review/index?page="+this.currentPage+"&pageSize="+this.pageSize,config).then((res) => {
+        this.$axios.get(process.env.API_HOST+"/api/list_review/index?page="+this.currentPage+"&pageSize="+this.pageSize,this.config).then((res) => {
           this.total = res.data.total;
           if(res.data.data){
             this.tableData = res.data.data;
@@ -138,20 +139,20 @@ export default {
       passCheck(event,id){
           event.stopPropagation();
           var _self = this;
-          this.$axios.post(process.env.API_HOST+"api/list_review/store",{
+          this.$axios.post(process.env.API_HOST+"/api/list_review/store",{
             id:id,
             is_update:false
-          }).then((res) => {
+          },this.config).then((res) => {
             if(res.data.data){
               _self.$confirm('名单中存在与该标记记录SHA256相等的记录,是否要更新?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
               }).then(() => {
-                _self.$axios.post(process.env.API_HOST+"api/list_review/store",{
+                _self.$axios.post(process.env.API_HOST+"/api/list_review/store",{
                   id:id,
                   is_update:true
-                }).then((res) => {
+                },this.config).then((res) => {
                   // console.log(res);
                   _self.$message.success(res.data.info);
                   this.fetchData();
@@ -174,11 +175,11 @@ export default {
       },
       refuseCheck(event,id){
         event.stopPropagation();
-        this.$axios.delete(process.env.API_HOST+"api/list_review/delete",{
+        this.$axios.delete(process.env.API_HOST+"/api/list_review/delete",{
             data:{
               id:id,
             }
-          }).then((res) => {
+          },this.config).then((res) => {
             this.$message.success(res.data.info);
             this.fetchData();
           }).catch((error) => {
@@ -197,11 +198,11 @@ export default {
         this.multipleSelection.forEach(element => {
             ids.push(element._id.$oid);
         });
-        this.$axios.delete(process.env.API_HOST+"api/list_review/batch_delete",{
+        this.$axios.delete(process.env.API_HOST+"/api/list_review/batch_delete",{
             data:{
               id_collections:ids,
             }
-          }).then((res) => {
+          },this.config).then((res) => {
             this.$message.success(res.data.info);
             this.fetchData();
           }).catch((error) => {
@@ -231,6 +232,9 @@ header{
 }
 .tagsixcolor{
   background: #E5E9F2;
+}
+.tooltip_content{
+  width:330px;word-break: break-word;
 }
 </style>
 <style>

@@ -16,7 +16,7 @@
                 <el-option label="文件名" value="file_name"></el-option>
                 <el-option label="用户名" value="user_name"></el-option>
               </el-select>
-              <el-button slot="append" icon="el-icon-search" size="medium" @click="keyWordSearch"></el-button>
+              <el-button slot="append" icon="el-icon-search" size="medium" @click="keyWordSearchClick"></el-button>
             </el-input>
           </div>
         </header>
@@ -296,7 +296,7 @@ export default {
           id:this.tagId,
           update_content:{"标签":this.inputValue}
         },this.config).then((res) => {
-          this.fetchData();
+          this.keyWordSearch();
           $('.tag'+id).css("display","none");
           $('.btn'+id).css("display","block");
         }).catch((error) => {
@@ -339,7 +339,6 @@ export default {
         this.fetchData();
       },
       handleCurrentChange(val){
-        // console.log(val);
         this.currentPage = val;
         if(this.filter1.length||this.filter2.length||this.filter3.length||this.filter4.length||this.filter5.length){
           this.filterChange();
@@ -356,8 +355,8 @@ export default {
         this.editVal = [];
         this.editVal = id;
       	this.$router.push({
-          name:'appedit',
-          params:{id:this.editVal}
+          path:'/appedit',
+          query:{id:this.editVal}
         })
     },
     deleteList(event,id){
@@ -380,11 +379,11 @@ export default {
       //   return;
       // }
       this.config = {
-            headers: {
-                'token':localStorage.token,
-                'username':localStorage.ms_username
-            }
-        };
+          headers: {
+              'token':localStorage.token,
+              'userid':localStorage.userid
+          }
+      };
       var _self = this;
       this.$axios.get(process.env.API_HOST+"/api/AppInfoList?page="+this.currentPage+"&pageSize="+this.pageSize,this.config).then((res) => {
             if(res.data.data.length){
@@ -430,20 +429,32 @@ export default {
         done();
     },
     keyWordSearch(){
+      this.$axios.get(process.env.API_HOST+"/api/AppInfoList/search?list_source="+this.listValue+"&condition="+this.filename+"&keyword="+this.input5+"&page="+this.currentPage+"&pageSize="+this.pageSize,this.config).then((res) => {
+          this.total = 0;
+          this.tableData = [];
+          if(res.data.data){
+            this.tableData=res.data.data;
+            this.total = res.data.total
+          }
+      }).catch((error) => {
+          this.$message.error(error.response.data.message);
+      });
+    },
+    keyWordSearchClick(){
       if(!this.input5){
         this.$message.error('请选择正确的关键字进行查询');
         return;
       }
       this.$axios.get(process.env.API_HOST+"/api/AppInfoList/search?list_source="+this.listValue+"&condition="+this.filename+"&keyword="+this.input5+"&page="+this.currentPage+"&pageSize="+this.pageSize,this.config).then((res) => {
-            this.total = 0;
-            this.tableData = [];
-            if(res.data.data){
-              this.tableData=res.data.data;
-              this.total = res.data.total
-            }
-        }).catch((error) => {
-            this.$message.error(error.response.data.message);
-        });
+          this.total = 0;
+          this.tableData = [];
+          if(res.data.data){
+            this.tableData=res.data.data;
+            this.total = res.data.total
+          }
+      }).catch((error) => {
+          this.$message.error(error.response.data.message);
+      });
     },
     filterChange(filters){
       if(filters){
@@ -500,6 +511,7 @@ export default {
     this.fetchData();
   },
   mounted() {
+    
   }
 }
 </script>

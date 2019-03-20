@@ -31,62 +31,64 @@
           <i class="iconfont icon-jia"></i> -->
 				</div>
         <div class="node1">
-          <div style="margin-left:20px" class="tree1" v-for="(item,indexkey) in items" v-if="Object.prototype.toString.call(items[indexkey])!='[object Object]' && indexkey !='进程'">
-            <el-input placeholder="请输入内容" :value="indexkey" :disabled="true"></el-input>
-            <el-checkbox v-model="checked"></el-checkbox>
-            <div class="mock">
-              <el-input placeholder="mock" v-model="items[indexkey]" :disabled="true" v-if="indexkey == '来源系统'|| indexkey =='名单来源'">
-                <template slot="append"><i class="iconfont icon-bi"></i></template>
-              </el-input>
-              <el-select v-model="items[indexkey]" placeholder="请选择" v-else-if="indexkey == '标签'" style="width:100%">
+          <div style="margin-left:20px" class="tree1" v-for="(item,indexkey) in items" :key="indexkey">
+            <div v-if="Object.prototype.toString.call(items[indexkey])!='[object Object]' && indexkey !='进程'">
+              <el-input placeholder="请输入内容" :value="indexkey" :disabled="true"></el-input>
+              <el-checkbox v-model="checked"></el-checkbox>
+              <div class="mock">
+                <el-input placeholder="mock" v-model="items[indexkey]" :disabled="true" v-if="indexkey == '来源系统'|| indexkey =='名单来源'">
+                  <template slot="append"><i class="iconfont icon-bi"></i></template>
+                </el-input>
+                <el-select v-model="items[indexkey]" placeholder="请选择" v-else-if="indexkey == '标签'" style="width:100%">
+                  <el-option
+                    v-for="item in label_list"
+                    :key="item"
+                    :label="item"
+                    :value="item">
+                  </el-option>
+                </el-select>
+                <el-select v-model="items[indexkey]" placeholder="请选择" v-else-if="indexkey == '名单类型'" style="width:100%">
+                  <el-option
+                    v-for="item in list_type"
+                    :key="item"
+                    :label="item"
+                    :value="item">
+                  </el-option>
+                </el-select>
+                <el-select v-model="items[indexkey]" placeholder="请选择" v-else-if="indexkey == '文件类型'" style="width:100%">
+                  <el-option
+                    v-for="item in file_type"
+                    :key="item"
+                    :label="item"
+                    :value="item">
+                  </el-option>
+                </el-select>
+                <el-input placeholder="mock" v-model="items[indexkey]" v-else>
+                  <template slot="append"><i class="iconfont icon-bi"></i></template>
+                </el-input>
+              </div>
+              <el-select v-model="check1" placeholder="请选择">
                 <el-option
-                  v-for="item in label_list"
-                  :key="item"
-                  :label="item"
-                  :value="item">
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
                 </el-option>
               </el-select>
-              <el-select v-model="items[indexkey]" placeholder="请选择" v-else-if="indexkey == '名单类型'" style="width:100%">
-                <el-option
-                  v-for="item in list_type"
-                  :key="item"
-                  :label="item"
-                  :value="item">
-                </el-option>
-              </el-select>
-              <el-select v-model="items[indexkey]" placeholder="请选择" v-else-if="indexkey == '文件类型'" style="width:100%">
-                <el-option
-                  v-for="item in file_type"
-                  :key="item"
-                  :label="item"
-                  :value="item">
-                </el-option>
-              </el-select>
-              <el-input placeholder="mock" v-model="items[indexkey]" v-else>
-                <template slot="append"><i class="iconfont icon-bi"></i></template>
-              </el-input>
+              <div class="description">
+                <el-input placeholder="description" >
+                  <template slot="append"><i class="iconfont icon-bi"></i></template>
+                </el-input>
+              </div>
+              <span class="title_mouse">
+                  <el-tooltip effect="dark" content="删除" placement="top">
+                      <el-button ><i class="iconfont icon-cuo" @click="removeSibling(indexkey)"></i></el-button>
+                  </el-tooltip>
+                  <el-tooltip effect="dark" content="添加" placement="top">
+                      <el-button ><i class="iconfont icon-jia" @click="addSibling"></i></el-button>
+                  </el-tooltip>
+              </span>
             </div>
-            <el-select v-model="check1" placeholder="请选择">
-              <el-option
-                v-for="item in options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-            <div class="description">
-              <el-input placeholder="description" >
-                <template slot="append"><i class="iconfont icon-bi"></i></template>
-              </el-input>
-            </div>
-            <span class="title_mouse">
-                <el-tooltip effect="dark" content="删除" placement="top">
-                    <el-button ><i class="iconfont icon-cuo" @click="removeSibling(indexkey)"></i></el-button>
-                </el-tooltip>
-                <el-tooltip effect="dark" content="添加" placement="top">
-                    <el-button ><i class="iconfont icon-jia" @click="addSibling"></i></el-button>
-                </el-tooltip>
-            </span>
           </div>
           <!-- 第二级目录 -->
           <div class="el-tree el-tree-node2 tree2" v-for="(item,indexkey) in items" v-if="Object.prototype.toString.call(items[indexkey])==='[object Object]'">
@@ -263,7 +265,8 @@ export default {
         //select选择
         label_list:[],
         list_type:[],
-        file_type:[]
+        file_type:[],
+        config:{}
     };
   },
   // beforeRouteEnter: (to, from, next) => {
@@ -330,7 +333,7 @@ export default {
     addSiblingThird(sec,third){
       this.addNumThird ++;
       this.$set(this.$data.items[sec][third],"thd"+this.addNumThird,'yy');
-      console.log(this.items);
+      // console.log(this.items);
     },
     removeSiblingThird(key,sec,third){
       this.$delete(this.items[key][sec],third);
@@ -340,17 +343,23 @@ export default {
       this.$axios.put(process.env.API_HOST+"/api/AppInfoList/edit",{
         id:this.detailData,
         update_content:this.items
-      }).then((res) => {
+      },this.config).then((res) => {
           _self.$message.success("保存成功");
-          setTimeout(function(){_self.$router.back(-1)},1000)
+          setTimeout(function(){_self.$router.back(-1)},500)
       }).catch((error) => {
           _self.$message.error(error.response.data.message);
       });
     },
     //从属性白名单获取全部信息
     fetchEditDataAttr(){
+      this.config = {
+          headers: {
+              'token':localStorage.token,
+              'username':localStorage.ms_username
+          }
+      };
       var _self = this;
-      this.$axios.get(process.env.API_HOST+"/api/AppInfoList/show?id="+this.detailData).then((res) => {
+      this.$axios.get(process.env.API_HOST+"/api/AppInfoList/show?id="+this.detailData,this.config).then((res) => {
             this.items = res.data.data[0];
             this.label_list = res.data.label_list;
             this.list_type = res.data.list_type;
@@ -366,7 +375,7 @@ export default {
   },
   created() {
     // console.log(this.detailData);
-    this.detailData = this.$route.params.id;
+    this.detailData = this.$route.query.id;
     // this.fetchEditData();
       this.fetchEditDataAttr();
   },
@@ -376,7 +385,7 @@ export default {
   watch:{
     $route() {
      // to 和 from 都是 路由信息对象
-     this.detailData = this.$route.params.id;
+     this.detailData = this.$route.query.id;
       if(this.detailData != undefined){
         // this.fetchEditData();
         if(this.detailData.length == 1){
@@ -392,6 +401,7 @@ export default {
 <style scoped lang="less">
 .edit{
   padding: 40px 30px;
+  background: #ffffff;
 }
 .icon-fanhui1{
   cursor: pointer;
